@@ -9,6 +9,7 @@
       "dom",
       "dom.iterable"
     ],
+    "types": ["./src/preload/index.d.ts"],
     "jsx": "react-jsx",
     "importHelpers": true,
     "moduleResolution": "bundler",

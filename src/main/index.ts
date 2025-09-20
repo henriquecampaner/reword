@@ -1,7 +1,7 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import icon from '../../resources/icon.png?asset';
+const icon = join(__dirname, '../../resources/icon.png');
 
 function createWindow(): void {
   // Create the browser window.
@@ -39,6 +39,12 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  // Register Ctrl+Shift+C shortcut
+  globalShortcut.register('CommandOrControl+Shift+C', () => {
+    console.log('Ctrl+Shift+C was pressed');
+    // Add your functionality here
+  });
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 

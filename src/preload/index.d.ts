@@ -1,8 +1,33 @@
-import { ElectronAPI } from '@electron-toolkit/preload';
+type Statistics = {
+  cpuUsage: number;
+  ramUsage: number;
+  storageUsage: number;
+};
 
-declare global {
-  interface Window {
-    electron: ElectronAPI;
-    api: unknown;
-  }
+type StaticData = {
+  totalStorage: number;
+  cpuModel: string;
+  totalMemoryGB: number;
+};
+
+type FrameAction = 'CLOSE' | 'MINIMIZE' | 'MAXIMIZE';
+
+type View = 'CPU' | 'RAM' | 'STORAGE';
+
+type EventPayloadMapping = {
+  statistics: Statistics;
+  getStaticData: StaticData;
+  changeView: View;
+  sendFrameAction: FrameAction;
+};
+
+type UnsubscribeFunction = () => void;
+
+interface Window {
+  electron: {
+    subscribeToStatistics: (callback: (data: Statistics) => void) => UnsubscribeFunction;
+    getStaticData: () => Promise<StaticData>;
+    subscribeToView: (callback: (data: View) => void) => UnsubscribeFunction;
+    sendFrameAction: (action: FrameAction) => void;
+  };
 }
