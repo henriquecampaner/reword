@@ -19,6 +19,8 @@ type EventPayloadMapping = {
   getStaticData: StaticData;
   changeView: View;
   sendFrameAction: FrameAction;
+  showPopup: void;
+  hidePopup: void;
 };
 
 type UnsubscribeFunction = () => void;
@@ -29,5 +31,7 @@ interface Window {
     getStaticData: () => Promise<StaticData>;
     subscribeToView: (callback: (data: View) => void) => UnsubscribeFunction;
     sendFrameAction: (action: FrameAction) => void;
+    onShowPopup: (callback: () => void) => UnsubscribeFunction;
+    onHidePopup: (callback: () => void) => UnsubscribeFunction;
   };
 }

@@ -35,14 +35,48 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+function createPopupWindow(): void {
+  // Create a small popup window
+  const popupWindow = new BrowserWindow({
+    width: 400,
+    height: 300,
+    show: false,
+    resizable: false,
+    alwaysOnTop: true,
+    frame: false,
+    transparent: true,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+
+  // Center the popup window
+  popupWindow.center();
+
+  popupWindow.on('ready-to-show', () => {
+    popupWindow.show();
+    popupWindow.focus();
+  });
+
+  // Close popup when clicking outside or pressing escape
+  popupWindow.on('blur', () => {
+    popupWindow.close();
+  });
+
+  // Load popup content
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    popupWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/popup-react.html`);
+  } else {
+    popupWindow.loadFile(join(__dirname, '../renderer/popup-react.html'));
+  }
+}
+
 app.whenReady().then(() => {
-  // Register Ctrl+Shift+C shortcut
   globalShortcut.register('CommandOrControl+Shift+C', () => {
-    console.log('Ctrl+Shift+C was pressed');
-    // Add your functionality here
+    createPopupWindow();
   });
 
   // Set app user model id for windows
