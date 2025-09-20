@@ -19,8 +19,7 @@ type EventPayloadMapping = {
   getStaticData: StaticData;
   changeView: View;
   sendFrameAction: FrameAction;
-  showPopup: void;
-  hidePopup: void;
+  getCopyText: { text: string };
 };
 
 type UnsubscribeFunction = () => void;
@@ -29,9 +28,8 @@ interface Window {
   electron: {
     subscribeToStatistics: (callback: (data: Statistics) => void) => UnsubscribeFunction;
     getStaticData: () => Promise<StaticData>;
+    subscribeToGetCopyText: (callback: (data: { text: string }) => void) => UnsubscribeFunction;
     subscribeToView: (callback: (data: View) => void) => UnsubscribeFunction;
     sendFrameAction: (action: FrameAction) => void;
-    onShowPopup: (callback: () => void) => UnsubscribeFunction;
-    onHidePopup: (callback: () => void) => UnsubscribeFunction;
   };
 }

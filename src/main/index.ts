@@ -1,6 +1,7 @@
-import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron';
+import { app, shell, BrowserWindow, globalShortcut } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import { getCopyText } from '../lib/getCopyText';
 const icon = join(__dirname, '../../resources/icon.png');
 
 function createWindow(): void {
@@ -35,7 +36,7 @@ function createWindow(): void {
   }
 }
 
-function createPopupWindow(): void {
+function createPopupWindow(textToSend: string = 'Hello, world!'): void {
   // Create a small popup window
   const popupWindow = new BrowserWindow({
     width: 400,
@@ -59,12 +60,17 @@ function createPopupWindow(): void {
   popupWindow.on('ready-to-show', () => {
     popupWindow.show();
     popupWindow.focus();
+
+    // Send text to popup after a short delay to ensure it's ready
+    setTimeout(() => {
+      getCopyText({ text: textToSend, mainWindow: popupWindow });
+    }, 100);
   });
 
-  // Close popup when clicking outside or pressing escape
-  popupWindow.on('blur', () => {
-    popupWindow.close();
-  });
+  // // Close popup when clicking outside or pressing escape
+  // popupWindow.on('blur', () => {
+  //   popupWindow.close();
+  // });
 
   // Load popup content
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
@@ -76,7 +82,8 @@ function createPopupWindow(): void {
 
 app.whenReady().then(() => {
   globalShortcut.register('CommandOrControl+Shift+C', () => {
-    createPopupWindow();
+    const currentTime = new Date().toLocaleTimeString();
+    createPopupWindow(`Popup activated at ${currentTime}! 🎉`);
   });
 
   // Set app user model id for windows
@@ -88,9 +95,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'));
 
   createWindow();
 

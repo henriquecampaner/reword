@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import electron from 'electron';
 
+electron.contextBridge.exposeInMainWorld('electron', {
+  subscribeToStatistics: (callback) => ipcOn('statistics', callback),
+  getStaticData: () => ipcInvoke('getStaticData'),
+  subscribeToGetCopyText: (callback) => ipcOn('getCopyText', callback),
+  subscribeToView: (callback) => ipcOn('changeView', callback),
+  sendFrameAction: (action) => ipcSend('sendFrameAction', action)
+} satisfies Window['electron']);
+
 function ipcInvoke<Key extends keyof EventPayloadMapping>(
   key: Key
 ): Promise<EventPayloadMapping[Key]> {
