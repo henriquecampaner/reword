@@ -48,7 +48,7 @@ export function PopApp(): React.JSX.Element {
           <div className="mb-4">
             <p className="text-sm font-medium mb-2 text-white opacity-90">Selected Text:</p>
             <div className="bg-white bg-opacity-20 rounded-md p-3 mb-3 max-h-32 overflow-y-auto">
-              <p className="text-sm text-white break-words">{receivedText}</p>
+              <p className="text-sm break-words">{receivedText}</p>
             </div>
           </div>
         ) : (
@@ -61,7 +61,7 @@ export function PopApp(): React.JSX.Element {
         <p className="text-xs opacity-70 mb-5 text-white">Ctrl+Shift+C (Cmd+Shift+C on Mac)</p>
         <button
           onClick={closeWindow}
-          className="bg-white bg-opacity-20 border border-white border-opacity-30 text-white px-4 py-2 rounded-md cursor-pointer text-sm transition-all duration-200 hover:bg-opacity-30 hover:-translate-y-0.5 active:translate-y-0"
+          className="bg-white bg-opacity-20 border border-white border-opacity-30 text-base px-4 py-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-opacity-30 hover:-translate-y-0.5 active:translate-y-0"
         >
           Close
         </button>

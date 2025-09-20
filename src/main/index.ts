@@ -78,6 +78,7 @@ async function getSelectedText(): Promise<string> {
 }
 
 async function createPopupWindow(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 200));
   // Get selected text first
   const selectedText = await getSelectedText();
 
@@ -105,12 +106,7 @@ async function createPopupWindow(): Promise<void> {
     popupWindow.show();
     popupWindow.focus();
 
-    console.log('selectedText', selectedText);
-
-    // Send selected text to popup after a short delay to ensure it's ready
-    setTimeout(() => {
-      getCopyText({ text: selectedText, mainWindow: popupWindow });
-    }, 100);
+    getCopyText({ text: selectedText, mainWindow: popupWindow });
   });
 
   // // Close popup when clicking outside or pressing escape
