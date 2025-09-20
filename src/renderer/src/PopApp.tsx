@@ -13,10 +13,7 @@ export function PopApp(): React.JSX.Element {
       }
     };
 
-    // Auto-close after 3 seconds
-    const autoCloseTimer = setTimeout(() => {
-      closeWindow();
-    }, 3000);
+    // Auto-close timer removed - window stays open until manually closed
 
     // Close when clicking outside the popup
     const handleClick = (e: MouseEvent) => {
@@ -31,7 +28,6 @@ export function PopApp(): React.JSX.Element {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('click', handleClick);
-      clearTimeout(autoCloseTimer);
     };
   }, []);
 
