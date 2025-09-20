@@ -1,5 +1,6 @@
-import { app, shell, BrowserWindow, globalShortcut } from 'electron';
+import { app, shell, BrowserWindow, globalShortcut, clipboard } from 'electron';
 import { join } from 'path';
+import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { getCopyText } from '../lib/getCopyText';
 const icon = join(__dirname, '../../resources/icon.png');
@@ -36,7 +37,50 @@ function createWindow(): void {
   }
 }
 
-function createPopupWindow(textToSend: string = 'Hello, world!'): void {
+async function getSelectedText(): Promise<string> {
+  // Store current clipboard content
+  const originalClipboard = clipboard.readText();
+
+  // Simulate Ctrl+C (Cmd+C on Mac) to copy selected text
+
+  try {
+    if (process.platform === 'darwin') {
+      // macOS
+      execSync(
+        'osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"'
+      );
+    } else if (process.platform === 'win32') {
+      // Windows
+      execSync(
+        'powershell -command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait(\'^c\')"'
+      );
+    } else {
+      // Linux
+      execSync('xdotool key ctrl+c');
+    }
+
+    // Wait a moment for clipboard to update
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Get the selected text from clipboard
+    const selectedText = clipboard.readText();
+
+    // Restore original clipboard content after a short delay
+    setTimeout(() => {
+      clipboard.writeText(originalClipboard);
+    }, 1000);
+
+    return selectedText || 'No text selected';
+  } catch (error) {
+    console.error('Error getting selected text:', error);
+    return 'Error getting selected text';
+  }
+}
+
+async function createPopupWindow(): Promise<void> {
+  // Get selected text first
+  const selectedText = await getSelectedText();
+
   // Create a small popup window
   const popupWindow = new BrowserWindow({
     width: 400,
@@ -61,9 +105,11 @@ function createPopupWindow(textToSend: string = 'Hello, world!'): void {
     popupWindow.show();
     popupWindow.focus();
 
-    // Send text to popup after a short delay to ensure it's ready
+    console.log('selectedText', selectedText);
+
+    // Send selected text to popup after a short delay to ensure it's ready
     setTimeout(() => {
-      getCopyText({ text: textToSend, mainWindow: popupWindow });
+      getCopyText({ text: selectedText, mainWindow: popupWindow });
     }, 100);
   });
 
@@ -81,9 +127,8 @@ function createPopupWindow(textToSend: string = 'Hello, world!'): void {
 }
 
 app.whenReady().then(() => {
-  globalShortcut.register('CommandOrControl+Shift+C', () => {
-    const currentTime = new Date().toLocaleTimeString();
-    createPopupWindow(`Popup activated at ${currentTime}! 🎉`);
+  globalShortcut.register('CommandOrControl+Shift+C', async () => {
+    await createPopupWindow();
   });
 
   // Set app user model id for windows

@@ -43,10 +43,10 @@ export function PopApp(): React.JSX.Element {
   return (
     <div className="min-h-screen flex items-center justify-center overflow-hidden bg-black bg-opacity-80">
       <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 max-w-sm w-[90%] text-center shadow-2xl border border-white border-opacity-10 backdrop-blur-lg animate-bounce-in">
-        <h2 className="text-xl font-semibold mb-3 text-white">📋 Text Received!</h2>
+        <h2 className="text-xl font-semibold mb-3 text-white">📋 Selected Text Captured!</h2>
         {receivedText ? (
           <div className="mb-4">
-            <p className="text-sm font-medium mb-2 text-white opacity-90">Received Text:</p>
+            <p className="text-sm font-medium mb-2 text-white opacity-90">Selected Text:</p>
             <div className="bg-white bg-opacity-20 rounded-md p-3 mb-3 max-h-32 overflow-y-auto">
               <p className="text-sm text-white break-words">{receivedText}</p>
             </div>
@@ -54,7 +54,7 @@ export function PopApp(): React.JSX.Element {
         ) : (
           <div className="mb-4">
             <p className="text-sm leading-relaxed mb-2 text-white opacity-90">
-              Waiting for text...
+              Capturing selected text...
             </p>
           </div>
         )}
