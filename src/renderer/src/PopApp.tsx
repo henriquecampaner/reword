@@ -80,113 +80,187 @@ export function PopApp(): React.JSX.Element {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center overflow-hidden bg-black bg-opacity-80">
-      <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 max-w-sm w-[90%] text-center shadow-2xl border border-white border-opacity-10 backdrop-blur-lg animate-bounce-in">
-        <h2 className="text-xl font-semibold mb-3 text-white">
-          {isLoading ? '🤖 AI Processing...' : '📋 Selected Text Captured!'}
-        </h2>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 w-full max-w-2xl shadow-2xl border border-white/20 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full opacity-20 blur-2xl -translate-y-8 translate-x-8"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-blue-400 to-cyan-400 rounded-full opacity-20 blur-2xl translate-y-4 -translate-x-4"></div>
+
+        {/* Header */}
+        <div className="relative z-10 text-center mb-8">
+          <div className="text-4xl mb-3">
+            {isLoading ? '🤖' : '✨'}
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            {isLoading ? 'AI Processing' : 'Text Rephraser'}
+          </h1>
+          <p className="text-sm text-white/70">
+            {isLoading ? 'Generating enhanced versions of your text...' : 'Choose a style and click to copy'}
+          </p>
+        </div>
 
         {hasStartedProcessing ? (
-          <div className="mb-4">
-            <p className="text-sm font-medium mb-2 text-white opacity-90">Original Text:</p>
-            <div className="bg-white bg-opacity-20 rounded-md p-3 mb-3 max-h-32 overflow-y-auto">
-              <p className="text-sm break-words">{receivedText.original}</p>
+          <div className="relative z-10">
+            {/* Original Text Section */}
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-1 h-6 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full mr-3"></div>
+                <h3 className="text-lg font-semibold text-white">Original Text</h3>
+              </div>
+              <div className="bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                <p className="text-white/90 leading-relaxed text-base">{receivedText.original}</p>
+              </div>
             </div>
 
             {isLoading ? (
-              <div className="mb-4">
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <p className="text-sm text-white opacity-90">
-                    AI is generating rephrased versions...
-                  </p>
+              <div className="text-center py-12">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/20 border-t-purple-400 mx-auto mb-6"></div>
+                  <div className="animate-pulse absolute top-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-60"></div>
                 </div>
+                <p className="text-white/80 text-lg font-medium mb-2">
+                  AI is crafting your text variations
+                </p>
+                <p className="text-white/60 text-sm">
+                  This usually takes just a few seconds...
+                </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                <button
-                  onClick={() => copyToClipboard(receivedText.professional)}
-                  className={`w-full bg-white bg-opacity-20 rounded-md p-3 hover:bg-opacity-30 transition-all duration-200 cursor-pointer border border-white border-opacity-20 hover:border-opacity-40 ${
-                    copiedText === receivedText.professional
-                      ? 'bg-green-500 bg-opacity-30 border-green-400'
-                      : ''
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="text-left flex-1">
-                      <p className="text-xs font-medium opacity-70 mb-1">Professional:</p>
-                      <p className="text-sm break-words">{receivedText.professional}</p>
+              <div>
+                <div className="flex items-center mb-6">
+                  <div className="w-1 h-6 bg-gradient-to-b from-blue-400 to-cyan-400 rounded-full mr-3"></div>
+                  <h3 className="text-lg font-semibold text-white">Choose Your Style</h3>
+                </div>
+
+                <div className="space-y-4">
+                  <button
+                    onClick={() => copyToClipboard(receivedText.professional)}
+                    className={`group w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:from-white/10 hover:to-white/15 hover:border-white/20 hover:shadow-lg hover:scale-[1.02] ${
+                      copiedText === receivedText.professional ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg' : ''
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="text-left flex-1">
+                        <div className="flex items-center mb-3">
+                          <span className="text-2xl mr-3">💼</span>
+                          <h4 className="text-lg font-semibold text-white">Professional</h4>
+                        </div>
+                        <p className="text-white/90 leading-relaxed">{receivedText.professional}</p>
+                      </div>
+                      <div className="ml-4 flex flex-col items-center">
+                        {copiedText === receivedText.professional ? (
+                          <div className="bg-emerald-500/20 rounded-full p-2 mb-2">
+                            <span className="text-emerald-300 text-xl">✓</span>
+                          </div>
+                        ) : (
+                          <div className="bg-white/10 rounded-full p-2 mb-2 group-hover:bg-white/20 transition-colors">
+                            <span className="text-white/60 text-xl">📋</span>
+                          </div>
+                        )}
+                        <span className={`text-xs font-medium ${
+                          copiedText === receivedText.professional ? 'text-emerald-300' : 'text-white/60 group-hover:text-white/80'
+                        }`}>
+                          {copiedText === receivedText.professional ? 'Copied!' : 'Click to copy'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="ml-2">
-                      {copiedText === receivedText.professional ? (
-                        <span className="text-green-300 text-xs">✓ Copied!</span>
-                      ) : (
-                        <span className="text-white opacity-50 text-xs">📋 Click to copy</span>
-                      )}
+                  </button>
+
+                  <button
+                    onClick={() => copyToClipboard(receivedText.polite)}
+                    className={`group w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:from-white/10 hover:to-white/15 hover:border-white/20 hover:shadow-lg hover:scale-[1.02] ${
+                      copiedText === receivedText.polite ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg' : ''
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="text-left flex-1">
+                        <div className="flex items-center mb-3">
+                          <span className="text-2xl mr-3">🤝</span>
+                          <h4 className="text-lg font-semibold text-white">Polite</h4>
+                        </div>
+                        <p className="text-white/90 leading-relaxed">{receivedText.polite}</p>
+                      </div>
+                      <div className="ml-4 flex flex-col items-center">
+                        {copiedText === receivedText.polite ? (
+                          <div className="bg-emerald-500/20 rounded-full p-2 mb-2">
+                            <span className="text-emerald-300 text-xl">✓</span>
+                          </div>
+                        ) : (
+                          <div className="bg-white/10 rounded-full p-2 mb-2 group-hover:bg-white/20 transition-colors">
+                            <span className="text-white/60 text-xl">📋</span>
+                          </div>
+                        )}
+                        <span className={`text-xs font-medium ${
+                          copiedText === receivedText.polite ? 'text-emerald-300' : 'text-white/60 group-hover:text-white/80'
+                        }`}>
+                          {copiedText === receivedText.polite ? 'Copied!' : 'Click to copy'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => copyToClipboard(receivedText.polite)}
-                  className={`w-full bg-white bg-opacity-20 rounded-md p-3 hover:bg-opacity-30 transition-all duration-200 cursor-pointer border border-white border-opacity-20 hover:border-opacity-40 ${
-                    copiedText === receivedText.polite
-                      ? 'bg-green-500 bg-opacity-30 border-green-400'
-                      : ''
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="text-left flex-1">
-                      <p className="text-xs font-medium opacity-70 mb-1">Polite:</p>
-                      <p className="text-sm break-words">{receivedText.polite}</p>
+                  </button>
+
+                  <button
+                    onClick={() => copyToClipboard(receivedText.funny)}
+                    className={`group w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:from-white/10 hover:to-white/15 hover:border-white/20 hover:shadow-lg hover:scale-[1.02] ${
+                      copiedText === receivedText.funny ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg' : ''
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="text-left flex-1">
+                        <div className="flex items-center mb-3">
+                          <span className="text-2xl mr-3">😄</span>
+                          <h4 className="text-lg font-semibold text-white">Funny</h4>
+                        </div>
+                        <p className="text-white/90 leading-relaxed">{receivedText.funny}</p>
+                      </div>
+                      <div className="ml-4 flex flex-col items-center">
+                        {copiedText === receivedText.funny ? (
+                          <div className="bg-emerald-500/20 rounded-full p-2 mb-2">
+                            <span className="text-emerald-300 text-xl">✓</span>
+                          </div>
+                        ) : (
+                          <div className="bg-white/10 rounded-full p-2 mb-2 group-hover:bg-white/20 transition-colors">
+                            <span className="text-white/60 text-xl">📋</span>
+                          </div>
+                        )}
+                        <span className={`text-xs font-medium ${
+                          copiedText === receivedText.funny ? 'text-emerald-300' : 'text-white/60 group-hover:text-white/80'
+                        }`}>
+                          {copiedText === receivedText.funny ? 'Copied!' : 'Click to copy'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="ml-2">
-                      {copiedText === receivedText.polite ? (
-                        <span className="text-green-300 text-xs">✓ Copied!</span>
-                      ) : (
-                        <span className="text-white opacity-50 text-xs">📋 Click to copy</span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => copyToClipboard(receivedText.funny)}
-                  className={`w-full bg-white bg-opacity-20 rounded-md p-3 hover:bg-opacity-30 transition-all duration-200 cursor-pointer border border-white border-opacity-20 hover:border-opacity-40 ${
-                    copiedText === receivedText.funny
-                      ? 'bg-green-500 bg-opacity-30 border-green-400'
-                      : ''
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="text-left flex-1">
-                      <p className="text-xs font-medium opacity-70 mb-1">Funny:</p>
-                      <p className="text-sm break-words">{receivedText.funny}</p>
-                    </div>
-                    <div className="ml-2">
-                      {copiedText === receivedText.funny ? (
-                        <span className="text-green-300 text-xs">✓ Copied!</span>
-                      ) : (
-                        <span className="text-white opacity-50 text-xs">📋 Click to copy</span>
-                      )}
-                    </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="mb-4">
-            <p className="text-sm leading-relaxed mb-2 text-white opacity-90">
+          <div className="text-center py-16">
+            <div className="text-6xl mb-6">⏳</div>
+            <p className="text-xl font-medium text-white mb-2">
               Capturing selected text...
+            </p>
+            <p className="text-white/60">
+              Please wait while we process your selection
             </p>
           </div>
         )}
-        <p className="text-xs opacity-70 mb-5 text-white">Ctrl+Shift+C (Cmd+Shift+C on Mac)</p>
-        <button
-          onClick={closeWindow}
-          className="bg-white bg-opacity-20 border border-white border-opacity-30 text-base px-4 py-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-opacity-30 hover:-translate-y-0.5 active:translate-y-0"
-        >
-          Close
-        </button>
+
+        {/* Footer */}
+        <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-white/50">
+              Press <kbd className="bg-white/10 px-2 py-1 rounded text-xs">Esc</kbd> or click outside to close
+            </p>
+            <button
+              onClick={closeWindow}
+              className="bg-gradient-to-r from-white/10 to-white/20 backdrop-blur-sm border border-white/20 text-white px-6 py-2 rounded-xl transition-all duration-200 hover:from-white/20 hover:to-white/30 hover:border-white/30 hover:shadow-lg"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
