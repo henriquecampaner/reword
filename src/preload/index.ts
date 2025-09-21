@@ -2,7 +2,8 @@
 import electron from 'electron';
 
 electron.contextBridge.exposeInMainWorld('electron', {
-  subscribeToGetRephrasedText: (callback) => ipcOn('getRephrasedText', callback)
+  subscribeToGetRephrasedText: (callback) => ipcOn('getRephrasedText', callback),
+  subscribeToProcessingStarted: (callback) => ipcOn('processingStarted', callback)
 } satisfies Window['electron']);
 
 // function ipcInvoke<Key extends keyof EventPayloadMapping>(

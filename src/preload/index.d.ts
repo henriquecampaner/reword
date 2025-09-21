@@ -5,6 +5,9 @@ type EventPayloadMapping = {
     professional: string;
     funny: string;
   };
+  processingStarted: {
+    originalText: string;
+  };
 };
 
 type UnsubscribeFunction = () => void;
@@ -18,6 +21,9 @@ interface Window {
         professional: string;
         funny: string;
       }) => void
+    ) => UnsubscribeFunction;
+    subscribeToProcessingStarted: (
+      callback: (data: { originalText: string }) => void
     ) => UnsubscribeFunction;
   };
 }

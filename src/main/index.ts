@@ -92,8 +92,8 @@ async function createPopupWindow(): Promise<void> {
 
   // Create a small popup window
   const popupWindow = new BrowserWindow({
-    width: 400,
-    height: 300,
+    width: 800,
+    height: 600,
     show: false,
     resizable: false,
     alwaysOnTop: true,

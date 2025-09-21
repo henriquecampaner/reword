@@ -8,6 +8,11 @@ type GetRephrasedText = {
 };
 
 export async function getRephrasedText({ text, mainWindow }: GetRephrasedText) {
+  // Emit processing started event
+  ipcWebContentSend('processingStarted', mainWindow.webContents, {
+    originalText: text
+  });
+
   const formattedText = await formatCopiedText({ text });
   console.log('formattedText', formattedText);
   ipcWebContentSend('getRephrasedText', mainWindow.webContents, {

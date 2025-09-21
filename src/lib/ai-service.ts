@@ -4,7 +4,6 @@ import { z } from 'zod';
 
 // Schema for text formatting response
 export const textFormattingSchema = z.object({
-  original: z.string().describe('The original copied text'),
   professional: z
     .string()
     .describe('Professional version of the text - formal, business-appropriate tone'),
@@ -36,6 +35,7 @@ export interface FormatTextResponse {
 
 export async function formatCopiedText(request: FormatTextRequest): Promise<FormatTextResponse> {
   try {
+    console.time('formatCopiedText');
     // Get the API key from environment variables
     const apiKey = process.env.OPENAI_API_KEY;
 
@@ -53,30 +53,33 @@ export async function formatCopiedText(request: FormatTextRequest): Promise<Form
       };
     }
 
-    // Create a comprehensive prompt for text formatting
-    const prompt = `
-Take the following text and rewrite it in three different styles while maintaining the core message and meaning:
+    // Create a concise prompt for text formatting
+    const prompt = `Rewrite this text in three styles:
 
-Original text: "${request.text}"
+"${request.text}"
 
-Please provide:
-1. Professional: Rewrite in a formal, business-appropriate tone suitable for workplace communication
-2. Polite: Rewrite in a courteous, respectful, and diplomatic tone that's friendly but not overly casual
-3. Funny: Rewrite in a humorous, witty, and entertaining way while keeping the original message clear
+1. Professional: Formal, business tone
+2. Polite: Courteous, respectful tone
+3. Funny: Humorous while keeping the message clear`;
 
-Make sure each version maintains the original intent and key information but adapts the tone appropriately.
-`;
-
-    // Generate the formatted text using AI SDK
+    // Generate the formatted text using AI SDK with optimized parameters
     const result = await generateObject({
       model: openai('gpt-5-nano'),
       schema: textFormattingSchema,
-      prompt
+      prompt,
+      temperature: 0.7
     });
+
+    console.timeEnd('formatCopiedText');
 
     return {
       success: true,
-      data: result.object
+      data: {
+        original: request.text,
+        professional: result.object.professional,
+        polite: result.object.polite,
+        funny: result.object.funny
+      }
     };
   } catch (error) {
     console.error('Error formatting text:', error);
