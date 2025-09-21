@@ -6,7 +6,10 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     // Detect if user is on Mac
-    setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0);
+    const detectMac = () => {
+      return navigator.userAgent.includes('Mac');
+    };
+    setIsMac(detectMac());
   }, []);
 
   return (
