@@ -1,11 +1,23 @@
 type EventPayloadMapping = {
-  getCopyText: { text: string };
+  getRephrasedText: {
+    original: string;
+    polite: string;
+    professional: string;
+    funny: string;
+  };
 };
 
 type UnsubscribeFunction = () => void;
 
 interface Window {
   electron: {
-    subscribeToGetCopyText: (callback: (data: { text: string }) => void) => UnsubscribeFunction;
+    subscribeToGetRephrasedText: (
+      callback: (data: {
+        original: string;
+        polite: string;
+        professional: string;
+        funny: string;
+      }) => void
+    ) => UnsubscribeFunction;
   };
 }

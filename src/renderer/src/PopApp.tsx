@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from 'react';
 
 export function PopApp(): React.JSX.Element {
-  const [receivedText, setReceivedText] = useState<string>('');
+  const [receivedText, setReceivedText] = useState<{
+    funny: string;
+    polite: string;
+    professional: string;
+    original: string;
+  }>({
+    funny: '',
+    polite: '',
+    professional: '',
+    original: ''
+  });
 
   const closeWindow = () => {
     window.close();
@@ -9,9 +19,9 @@ export function PopApp(): React.JSX.Element {
 
   useEffect(() => {
     // Subscribe to getCopyText events
-    const unsubscribe = window.electron.subscribeToGetCopyText((data) => {
+    const unsubscribe = window.electron.subscribeToGetRephrasedText((data) => {
       console.log('data', data);
-      setReceivedText(data.text);
+      setReceivedText(data);
     });
 
     // Close on Escape key
@@ -48,7 +58,10 @@ export function PopApp(): React.JSX.Element {
           <div className="mb-4">
             <p className="text-sm font-medium mb-2 text-white opacity-90">Selected Text:</p>
             <div className="bg-white bg-opacity-20 rounded-md p-3 mb-3 max-h-32 overflow-y-auto">
-              <p className="text-sm break-words">{receivedText}</p>
+              <p className="text-sm break-words">{receivedText.original}</p>
+              <p className="text-sm break-words">{receivedText.polite}</p>
+              <p className="text-sm break-words">{receivedText.professional}</p>
+              <p className="text-sm break-words">{receivedText.funny}</p>
             </div>
           </div>
         ) : (

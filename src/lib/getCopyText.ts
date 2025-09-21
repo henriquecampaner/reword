@@ -1,11 +1,19 @@
 import { BrowserWindow } from 'electron';
 import { ipcWebContentSend } from './adapters';
+import { formatCopiedText } from './ai-service';
 
-type GetCopyText = {
+type GetRephrasedText = {
   text: string;
   mainWindow: BrowserWindow;
 };
 
-export function getCopyText({ text, mainWindow }: GetCopyText) {
-  ipcWebContentSend('getCopyText', mainWindow.webContents, { text });
+export async function getRephrasedText({ text, mainWindow }: GetRephrasedText) {
+  const formattedText = await formatCopiedText({ text });
+  console.log('formattedText', formattedText);
+  ipcWebContentSend('getRephrasedText', mainWindow.webContents, {
+    funny: formattedText.data?.funny ?? '',
+    polite: formattedText.data?.polite ?? '',
+    professional: formattedText.data?.professional ?? '',
+    original: formattedText.data?.original ?? ''
+  });
 }

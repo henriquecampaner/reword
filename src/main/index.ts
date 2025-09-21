@@ -2,7 +2,15 @@ import { app, shell, BrowserWindow, globalShortcut, clipboard } from 'electron';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { getCopyText } from '../lib/getCopyText';
+import { getRephrasedText } from '../lib/getCopyText';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
+
+// Test that environment variables are loaded
+console.log('Environment setup check:');
+console.log('OPENAI_API_KEY loaded:', process.env.OPENAI_API_KEY ? 'Yes (Key found)' : 'No');
 const icon = join(__dirname, '../../resources/icon.png');
 
 function createWindow(): void {
@@ -106,7 +114,7 @@ async function createPopupWindow(): Promise<void> {
     popupWindow.show();
     popupWindow.focus();
 
-    getCopyText({ text: selectedText, mainWindow: popupWindow });
+    getRephrasedText({ text: selectedText, mainWindow: popupWindow });
   });
 
   // // Close popup when clicking outside or pressing escape
