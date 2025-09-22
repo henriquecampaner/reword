@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, globalShortcut, clipboard } from 'electron';
+import { app, shell, BrowserWindow, globalShortcut, clipboard, ipcMain } from 'electron';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
@@ -129,6 +129,15 @@ async function createPopupWindow(): Promise<void> {
     popupWindow.loadFile(join(__dirname, '../renderer/popup-react.html'));
   }
 }
+
+// Handle close window IPC message
+ipcMain.on('close-window', (event) => {
+  const webContents = event.sender;
+  const window = BrowserWindow.fromWebContents(webContents);
+  if (window) {
+    window.close();
+  }
+});
 
 app.whenReady().then(() => {
   globalShortcut.register('CommandOrControl+Shift+C', async () => {

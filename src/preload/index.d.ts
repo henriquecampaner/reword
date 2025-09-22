@@ -25,5 +25,6 @@ interface Window {
     subscribeToProcessingStarted: (
       callback: (data: { originalText: string }) => void
     ) => UnsubscribeFunction;
+    closeWindow: () => void;
   };
 }

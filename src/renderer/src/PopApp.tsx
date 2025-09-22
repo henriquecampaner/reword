@@ -17,7 +17,7 @@ export function PopApp(): React.JSX.Element {
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const closeWindow = () => {
-    window.close();
+    window.electron.closeWindow();
   };
 
   const copyToClipboard = async (text: string) => {
@@ -88,14 +88,14 @@ export function PopApp(): React.JSX.Element {
 
         {/* Header */}
         <div className="relative z-10 text-center mb-8">
-          <div className="text-4xl mb-3">
-            {isLoading ? '🤖' : '✨'}
-          </div>
+          <div className="text-4xl mb-3">{isLoading ? '🤖' : '✨'}</div>
           <h1 className="text-2xl font-bold text-white mb-2">
             {isLoading ? 'AI Processing' : 'Text Rephraser'}
           </h1>
           <p className="text-sm text-white/70">
-            {isLoading ? 'Generating enhanced versions of your text...' : 'Choose a style and click to copy'}
+            {isLoading
+              ? 'Generating enhanced versions of your text...'
+              : 'Choose a style and click to copy'}
           </p>
         </div>
 
@@ -121,9 +121,7 @@ export function PopApp(): React.JSX.Element {
                 <p className="text-white/80 text-lg font-medium mb-2">
                   AI is crafting your text variations
                 </p>
-                <p className="text-white/60 text-sm">
-                  This usually takes just a few seconds...
-                </p>
+                <p className="text-white/60 text-sm">This usually takes just a few seconds...</p>
               </div>
             ) : (
               <div>
@@ -136,7 +134,9 @@ export function PopApp(): React.JSX.Element {
                   <button
                     onClick={() => copyToClipboard(receivedText.professional)}
                     className={`group w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:from-white/10 hover:to-white/15 hover:border-white/20 hover:shadow-lg hover:scale-[1.02] ${
-                      copiedText === receivedText.professional ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg' : ''
+                      copiedText === receivedText.professional
+                        ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg'
+                        : ''
                     }`}
                   >
                     <div className="flex items-start justify-between">
@@ -157,9 +157,13 @@ export function PopApp(): React.JSX.Element {
                             <span className="text-white/60 text-xl">📋</span>
                           </div>
                         )}
-                        <span className={`text-xs font-medium ${
-                          copiedText === receivedText.professional ? 'text-emerald-300' : 'text-white/60 group-hover:text-white/80'
-                        }`}>
+                        <span
+                          className={`text-xs font-medium ${
+                            copiedText === receivedText.professional
+                              ? 'text-emerald-300'
+                              : 'text-white/60 group-hover:text-white/80'
+                          }`}
+                        >
                           {copiedText === receivedText.professional ? 'Copied!' : 'Click to copy'}
                         </span>
                       </div>
@@ -169,7 +173,9 @@ export function PopApp(): React.JSX.Element {
                   <button
                     onClick={() => copyToClipboard(receivedText.polite)}
                     className={`group w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:from-white/10 hover:to-white/15 hover:border-white/20 hover:shadow-lg hover:scale-[1.02] ${
-                      copiedText === receivedText.polite ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg' : ''
+                      copiedText === receivedText.polite
+                        ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg'
+                        : ''
                     }`}
                   >
                     <div className="flex items-start justify-between">
@@ -190,9 +196,13 @@ export function PopApp(): React.JSX.Element {
                             <span className="text-white/60 text-xl">📋</span>
                           </div>
                         )}
-                        <span className={`text-xs font-medium ${
-                          copiedText === receivedText.polite ? 'text-emerald-300' : 'text-white/60 group-hover:text-white/80'
-                        }`}>
+                        <span
+                          className={`text-xs font-medium ${
+                            copiedText === receivedText.polite
+                              ? 'text-emerald-300'
+                              : 'text-white/60 group-hover:text-white/80'
+                          }`}
+                        >
                           {copiedText === receivedText.polite ? 'Copied!' : 'Click to copy'}
                         </span>
                       </div>
@@ -202,7 +212,9 @@ export function PopApp(): React.JSX.Element {
                   <button
                     onClick={() => copyToClipboard(receivedText.funny)}
                     className={`group w-full bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 transition-all duration-300 hover:from-white/10 hover:to-white/15 hover:border-white/20 hover:shadow-lg hover:scale-[1.02] ${
-                      copiedText === receivedText.funny ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg' : ''
+                      copiedText === receivedText.funny
+                        ? 'from-emerald-500/20 to-green-500/20 border-emerald-400/50 shadow-emerald-500/25 shadow-lg'
+                        : ''
                     }`}
                   >
                     <div className="flex items-start justify-between">
@@ -223,9 +235,13 @@ export function PopApp(): React.JSX.Element {
                             <span className="text-white/60 text-xl">📋</span>
                           </div>
                         )}
-                        <span className={`text-xs font-medium ${
-                          copiedText === receivedText.funny ? 'text-emerald-300' : 'text-white/60 group-hover:text-white/80'
-                        }`}>
+                        <span
+                          className={`text-xs font-medium ${
+                            copiedText === receivedText.funny
+                              ? 'text-emerald-300'
+                              : 'text-white/60 group-hover:text-white/80'
+                          }`}
+                        >
                           {copiedText === receivedText.funny ? 'Copied!' : 'Click to copy'}
                         </span>
                       </div>
@@ -238,12 +254,8 @@ export function PopApp(): React.JSX.Element {
         ) : (
           <div className="text-center py-16">
             <div className="text-6xl mb-6">⏳</div>
-            <p className="text-xl font-medium text-white mb-2">
-              Capturing selected text...
-            </p>
-            <p className="text-white/60">
-              Please wait while we process your selection
-            </p>
+            <p className="text-xl font-medium text-white mb-2">Capturing selected text...</p>
+            <p className="text-white/60">Please wait while we process your selection</p>
           </div>
         )}
 
@@ -251,7 +263,8 @@ export function PopApp(): React.JSX.Element {
         <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
           <div className="flex items-center justify-between">
             <p className="text-xs text-white/50">
-              Press <kbd className="bg-white/10 px-2 py-1 rounded text-xs">Esc</kbd> or click outside to close
+              Press <kbd className="bg-white/10 px-2 py-1 rounded text-xs">Esc</kbd> or click
+              outside to close
             </p>
             <button
               onClick={closeWindow}
