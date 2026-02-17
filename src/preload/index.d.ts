@@ -1,8 +1,8 @@
 type EventPayloadMapping = {
   getRephrasedText: {
     original: string;
-    polite: string;
     professional: string;
+    formal: string;
     funny: string;
   };
   processingStarted: {
@@ -17,8 +17,8 @@ interface Window {
     subscribeToGetRephrasedText: (
       callback: (data: {
         original: string;
-        polite: string;
         professional: string;
+        formal: string;
         funny: string;
       }) => void
     ) => UnsubscribeFunction;

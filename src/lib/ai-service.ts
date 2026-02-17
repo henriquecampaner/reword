@@ -11,7 +11,7 @@ export interface FormatTextResponse {
   data?: {
     original: string;
     professional: string;
-    polite: string;
+    formal: string;
     funny: string;
   };
   error?: string;
@@ -40,26 +40,26 @@ export async function formatCopiedText(request: FormatTextRequest): Promise<Form
     const model = groq('llama-3.3-70b-versatile');
     const text = request.text;
 
-    const shared = { model, maxTokens: 80, temperature: 0.7 } as const;
+    const shared = { model, maxTokens: 80, temperature: 0.3 } as const;
 
     // Fire all three style rewrites in parallel for maximum speed
-    const [professional, polite, funny] = await Promise.all([
+    const [professional, formal, funny] = await Promise.all([
       generateText({
         ...shared,
         system:
-          "You rewrite text in different tones. Transform the given text into a professional, formal, business-appropriate version. Example: 'hey what's up' becomes 'Hello, how may I assist you?' Output ONLY the rewritten text, nothing else.",
+          'You rewrite text in different tones. For each text provided, give a Professional version. Fix any grammar errors using British English spelling and grammar. Transform the text into a professional, business-appropriate version while preserving the exact meaning and information. Do not add new information or expand unnecessarily. Output ONLY the rewritten text.',
         prompt: `Text to rewrite: "${text}"`
       }),
       generateText({
         ...shared,
         system:
-          "You rewrite text in different tones. Transform the given text into a polite, courteous, respectful version. Example: 'hey what's up' becomes 'Hello, how are you doing today?' Output ONLY the rewritten text, nothing else.",
+          'You rewrite text in different tones. For each text provided, give a Formal version. Fix any grammar errors using British English spelling and grammar. Transform the text into a formal, official version suitable for formal documents while preserving the exact meaning and information. Do not add new information or expand unnecessarily. Output ONLY the rewritten text.',
         prompt: `Text to rewrite: "${text}"`
       }),
       generateText({
         ...shared,
         system:
-          "You rewrite text in different tones. Transform the given text into a funny, witty, humorous version while keeping the core message. Example: 'hey what's up' becomes 'Well hello there, what's the latest gossip in your world?' Output ONLY the rewritten text, nothing else.",
+          'You rewrite text in different tones. For each text provided, give a Funny version. Fix any grammar errors using British English spelling and grammar. Transform the text into a funny, witty, or humorous version while preserving the exact meaning and core information. Add humour through wordplay or playful language, but do not add new information or expand unnecessarily. Output ONLY the rewritten text.',
         prompt: `Text to rewrite: "${text}"`
       })
     ]);
@@ -71,7 +71,7 @@ export async function formatCopiedText(request: FormatTextRequest): Promise<Form
       data: {
         original: text,
         professional: professional.text,
-        polite: polite.text,
+        formal: formal.text,
         funny: funny.text
       }
     };

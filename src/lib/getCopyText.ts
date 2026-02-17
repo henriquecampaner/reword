@@ -17,8 +17,8 @@ export async function getRephrasedText({ text, mainWindow }: GetRephrasedText) {
   console.log('formattedText', formattedText);
   ipcWebContentSend('getRephrasedText', mainWindow.webContents, {
     funny: formattedText.data?.funny ?? '',
-    polite: formattedText.data?.polite ?? '',
     professional: formattedText.data?.professional ?? '',
+    formal: formattedText.data?.formal ?? '',
     original: formattedText.data?.original ?? ''
   });
 }

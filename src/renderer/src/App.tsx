@@ -31,8 +31,7 @@ function App(): React.JSX.Element {
               AI Text Rephraser
             </h1>
             <p className="text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
-              Transform your text into professional, polite, or funny variations with the power of
-              AI
+              Transform your text into professional, formal, or funny variations with the power of AI
             </p>
           </div>
 
@@ -74,13 +73,13 @@ function App(): React.JSX.Element {
               <div className="text-4xl mb-4">💼</div>
               <h3 className="text-lg font-semibold text-white mb-2">Professional</h3>
               <p className="text-white/60 text-sm">
-                Transform casual text into business-appropriate language
+                Transform casual text into professional, business-appropriate language
               </p>
             </div>
             <div className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:from-white/10 hover:to-white/15 transition-all duration-300">
-              <div className="text-4xl mb-4">🤝</div>
-              <h3 className="text-lg font-semibold text-white mb-2">Polite</h3>
-              <p className="text-white/60 text-sm">Make your text more courteous and respectful</p>
+              <div className="text-4xl mb-4">📋</div>
+              <h3 className="text-lg font-semibold text-white mb-2">Formal</h3>
+              <p className="text-white/60 text-sm">Convert text into formal, official language</p>
             </div>
             <div className="bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:from-white/10 hover:to-white/15 transition-all duration-300">
               <div className="text-4xl mb-4">😄</div>
