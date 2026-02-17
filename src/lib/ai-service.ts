@@ -1,21 +1,5 @@
-import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
-
-// Schema for text formatting response
-export const textFormattingSchema = z.object({
-  professional: z
-    .string()
-    .describe('Professional version of the text - formal, business-appropriate tone'),
-  polite: z
-    .string()
-    .describe('Polite version of the text - courteous, respectful, and diplomatic tone'),
-  funny: z
-    .string()
-    .describe(
-      'Funny version of the text - humorous, witty, and entertaining while maintaining the core message'
-    )
-});
+import { generateText } from 'ai';
+import { groq } from '@ai-sdk/groq';
 
 export interface FormatTextRequest {
   text: string;
@@ -37,12 +21,12 @@ export async function formatCopiedText(request: FormatTextRequest): Promise<Form
   try {
     console.time('formatCopiedText');
     // Get the API key from environment variables
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
       return {
         success: false,
-        error: 'OpenAI API key not found. Please set OPENAI_API_KEY environment variable.'
+        error: 'Groq API key not found. Please set GROQ_API_KEY environment variable.'
       };
     }
 
@@ -53,32 +37,42 @@ export async function formatCopiedText(request: FormatTextRequest): Promise<Form
       };
     }
 
-    // Create a concise prompt for text formatting
-    const prompt = `Rewrite this text in three styles:
+    const model = groq('llama-3.3-70b-versatile');
+    const text = request.text;
 
-"${request.text}"
+    const shared = { model, maxTokens: 80, temperature: 0.7 } as const;
 
-1. Professional: Formal, business tone
-2. Polite: Courteous, respectful tone
-3. Funny: Humorous while keeping the message clear`;
-
-    // Generate the formatted text using AI SDK with optimized parameters
-    const result = await generateObject({
-      model: openai('gpt-5-nano'),
-      schema: textFormattingSchema,
-      prompt,
-      temperature: 0.7
-    });
+    // Fire all three style rewrites in parallel for maximum speed
+    const [professional, polite, funny] = await Promise.all([
+      generateText({
+        ...shared,
+        system:
+          "You rewrite text in different tones. Transform the given text into a professional, formal, business-appropriate version. Example: 'hey what's up' becomes 'Hello, how may I assist you?' Output ONLY the rewritten text, nothing else.",
+        prompt: `Text to rewrite: "${text}"`
+      }),
+      generateText({
+        ...shared,
+        system:
+          "You rewrite text in different tones. Transform the given text into a polite, courteous, respectful version. Example: 'hey what's up' becomes 'Hello, how are you doing today?' Output ONLY the rewritten text, nothing else.",
+        prompt: `Text to rewrite: "${text}"`
+      }),
+      generateText({
+        ...shared,
+        system:
+          "You rewrite text in different tones. Transform the given text into a funny, witty, humorous version while keeping the core message. Example: 'hey what's up' becomes 'Well hello there, what's the latest gossip in your world?' Output ONLY the rewritten text, nothing else.",
+        prompt: `Text to rewrite: "${text}"`
+      })
+    ]);
 
     console.timeEnd('formatCopiedText');
 
     return {
       success: true,
       data: {
-        original: request.text,
-        professional: result.object.professional,
-        polite: result.object.polite,
-        funny: result.object.funny
+        original: text,
+        professional: professional.text,
+        polite: polite.text,
+        funny: funny.text
       }
     };
   } catch (error) {
