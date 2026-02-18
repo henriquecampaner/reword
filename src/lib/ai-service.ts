@@ -3,6 +3,7 @@ import { groq } from '@ai-sdk/groq';
 
 export interface FormatTextRequest {
   text: string;
+  apiKey?: string;
   model?: string;
 }
 
@@ -20,13 +21,12 @@ export interface FormatTextResponse {
 export async function formatCopiedText(request: FormatTextRequest): Promise<FormatTextResponse> {
   try {
     console.time('formatCopiedText');
-    // Get the API key from environment variables
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = request.apiKey;
 
     if (!apiKey) {
       return {
         success: false,
-        error: 'Groq API key not found. Please set GROQ_API_KEY environment variable.'
+        error: 'Groq API key not found. Please add your API key in the settings.'
       };
     }
 

@@ -6,14 +6,11 @@ electron.contextBridge.exposeInMainWorld('electron', {
   subscribeToProcessingStarted: (callback) => ipcOn('processingStarted', callback),
   closeWindow: () => {
     electron.ipcRenderer.send('close-window');
-  }
+  },
+  getApiKey: () => electron.ipcRenderer.invoke('get-api-key'),
+  setApiKey: (key: string) => electron.ipcRenderer.invoke('set-api-key', key),
+  hasApiKey: () => electron.ipcRenderer.invoke('has-api-key')
 } satisfies Window['electron']);
-
-// function ipcInvoke<Key extends keyof EventPayloadMapping>(
-//   key: Key
-// ): Promise<EventPayloadMapping[Key]> {
-//   return electron.ipcRenderer.invoke(key);
-// }
 
 function ipcOn<Key extends keyof EventPayloadMapping>(
   key: Key,
@@ -23,10 +20,3 @@ function ipcOn<Key extends keyof EventPayloadMapping>(
   electron.ipcRenderer.on(key, cb);
   return () => electron.ipcRenderer.off(key, cb);
 }
-
-// function ipcSend<Key extends keyof EventPayloadMapping>(
-//   key: Key,
-//   payload: EventPayloadMapping[Key]
-// ) {
-//   electron.ipcRenderer.send(key, payload);
-// }

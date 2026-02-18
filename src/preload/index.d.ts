@@ -26,5 +26,8 @@ interface Window {
       callback: (data: { originalText: string }) => void
     ) => UnsubscribeFunction;
     closeWindow: () => void;
+    getApiKey: () => Promise<string>;
+    setApiKey: (key: string) => Promise<void>;
+    hasApiKey: () => Promise<boolean>;
   };
 }

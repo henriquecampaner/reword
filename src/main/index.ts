@@ -3,14 +3,10 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { getRephrasedText } from '../lib/getCopyText';
+import { getApiKey, setApiKey, hasApiKey } from '../lib/store';
 import dotenv from 'dotenv';
 
-// Load environment variables from .env file
 dotenv.config();
-
-// Test that environment variables are loaded
-console.log('Environment setup check:');
-console.log('OPENAI_API_KEY loaded:', process.env.OPENAI_API_KEY ? 'Yes (Key found)' : 'No');
 const icon = join(__dirname, '../../resources/icon.png');
 
 function createWindow(): void {
@@ -130,13 +126,26 @@ async function createPopupWindow(): Promise<void> {
   }
 }
 
-// Handle close window IPC message
 ipcMain.on('close-window', (event) => {
   const webContents = event.sender;
   const window = BrowserWindow.fromWebContents(webContents);
   if (window) {
     window.close();
   }
+});
+
+ipcMain.handle('get-api-key', () => {
+  const key = getApiKey();
+  if (!key) return '';
+  return key.slice(0, 8) + '•'.repeat(Math.max(0, key.length - 8));
+});
+
+ipcMain.handle('set-api-key', (_event, key: string) => {
+  setApiKey(key);
+});
+
+ipcMain.handle('has-api-key', () => {
+  return hasApiKey();
 });
 
 app.whenReady().then(() => {
