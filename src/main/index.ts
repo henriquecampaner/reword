@@ -3,7 +3,14 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { getRephrasedText } from '../lib/getCopyText';
-import { getApiKey, setApiKey, hasApiKey } from '../lib/store';
+import {
+  getApiKeyForProvider,
+  setApiKeyForProvider,
+  hasApiKeyForProvider,
+  getActiveProvider,
+  setActiveProvider,
+  type LLMProvider
+} from '../lib/store';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -13,7 +20,7 @@ function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
-    height: 670,
+    height: 860,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -134,18 +141,26 @@ ipcMain.on('close-window', (event) => {
   }
 });
 
-ipcMain.handle('get-api-key', () => {
-  const key = getApiKey();
+ipcMain.handle('get-api-key', (_event, provider: LLMProvider) => {
+  const key = getApiKeyForProvider(provider);
   if (!key) return '';
   return key.slice(0, 8) + '•'.repeat(Math.max(0, key.length - 8));
 });
 
-ipcMain.handle('set-api-key', (_event, key: string) => {
-  setApiKey(key);
+ipcMain.handle('set-api-key', (_event, provider: LLMProvider, key: string) => {
+  setApiKeyForProvider(provider, key);
 });
 
-ipcMain.handle('has-api-key', () => {
-  return hasApiKey();
+ipcMain.handle('has-api-key', (_event, provider: LLMProvider) => {
+  return hasApiKeyForProvider(provider);
+});
+
+ipcMain.handle('get-active-provider', () => {
+  return getActiveProvider();
+});
+
+ipcMain.handle('set-active-provider', (_event, provider: LLMProvider) => {
+  setActiveProvider(provider);
 });
 
 app.whenReady().then(() => {

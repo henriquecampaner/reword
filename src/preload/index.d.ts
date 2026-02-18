@@ -1,3 +1,5 @@
+type LLMProvider = 'groq' | 'openai' | 'anthropic';
+
 type EventPayloadMapping = {
   getRephrasedText: {
     original: string;
@@ -26,8 +28,10 @@ interface Window {
       callback: (data: { originalText: string }) => void
     ) => UnsubscribeFunction;
     closeWindow: () => void;
-    getApiKey: () => Promise<string>;
-    setApiKey: (key: string) => Promise<void>;
-    hasApiKey: () => Promise<boolean>;
+    getApiKey: (provider: LLMProvider) => Promise<string>;
+    setApiKey: (provider: LLMProvider, key: string) => Promise<void>;
+    hasApiKey: (provider: LLMProvider) => Promise<boolean>;
+    getActiveProvider: () => Promise<LLMProvider>;
+    setActiveProvider: (provider: LLMProvider) => Promise<void>;
   };
 }

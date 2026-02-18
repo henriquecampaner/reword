@@ -1,10 +1,13 @@
-import { generateText } from 'ai';
-import { groq } from '@ai-sdk/groq';
+import { generateText, type LanguageModel } from 'ai';
+import { createGroq } from '@ai-sdk/groq';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import type { LLMProvider } from './store';
 
 export interface FormatTextRequest {
   text: string;
   apiKey?: string;
-  model?: string;
+  provider?: LLMProvider;
 }
 
 export interface FormatTextResponse {
@@ -18,15 +21,33 @@ export interface FormatTextResponse {
   error?: string;
 }
 
+function createModel(provider: LLMProvider, apiKey: string): LanguageModel {
+  switch (provider) {
+    case 'groq': {
+      const groq = createGroq({ apiKey });
+      return groq('llama-3.3-70b-versatile');
+    }
+    case 'openai': {
+      const openai = createOpenAI({ apiKey });
+      return openai('gpt-4o-mini');
+    }
+    case 'anthropic': {
+      const anthropic = createAnthropic({ apiKey });
+      return anthropic('claude-sonnet-4-20250514');
+    }
+  }
+}
+
 export async function formatCopiedText(request: FormatTextRequest): Promise<FormatTextResponse> {
   try {
     console.time('formatCopiedText');
+    const provider = request.provider ?? 'groq';
     const apiKey = request.apiKey;
 
     if (!apiKey) {
       return {
         success: false,
-        error: 'Groq API key not found. Please add your API key in the settings.'
+        error: `API key not found for ${provider}. Please add your API key in the settings.`
       };
     }
 
@@ -37,12 +58,11 @@ export async function formatCopiedText(request: FormatTextRequest): Promise<Form
       };
     }
 
-    const model = groq('llama-3.3-70b-versatile');
+    const model = createModel(provider, apiKey);
     const text = request.text;
 
     const shared = { model, maxTokens: 80, temperature: 0.3 } as const;
 
-    // Fire all three style rewrites in parallel for maximum speed
     const [professional, formal, funny] = await Promise.all([
       generateText({
         ...shared,

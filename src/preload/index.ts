@@ -7,9 +7,13 @@ electron.contextBridge.exposeInMainWorld('electron', {
   closeWindow: () => {
     electron.ipcRenderer.send('close-window');
   },
-  getApiKey: () => electron.ipcRenderer.invoke('get-api-key'),
-  setApiKey: (key: string) => electron.ipcRenderer.invoke('set-api-key', key),
-  hasApiKey: () => electron.ipcRenderer.invoke('has-api-key')
+  getApiKey: (provider: LLMProvider) => electron.ipcRenderer.invoke('get-api-key', provider),
+  setApiKey: (provider: LLMProvider, key: string) =>
+    electron.ipcRenderer.invoke('set-api-key', provider, key),
+  hasApiKey: (provider: LLMProvider) => electron.ipcRenderer.invoke('has-api-key', provider),
+  getActiveProvider: () => electron.ipcRenderer.invoke('get-active-provider'),
+  setActiveProvider: (provider: LLMProvider) =>
+    electron.ipcRenderer.invoke('set-active-provider', provider)
 } satisfies Window['electron']);
 
 function ipcOn<Key extends keyof EventPayloadMapping>(

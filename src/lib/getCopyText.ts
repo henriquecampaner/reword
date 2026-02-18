@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { ipcWebContentSend } from './adapters';
 import { formatCopiedText } from './ai-service';
-import { getApiKey } from './store';
+import { getActiveApiKey, getActiveProvider } from './store';
 
 type GetRephrasedText = {
   text: string;
@@ -13,8 +13,9 @@ export async function getRephrasedText({ text, mainWindow }: GetRephrasedText) {
     originalText: text
   });
 
-  const apiKey = getApiKey();
-  const formattedText = await formatCopiedText({ text, apiKey });
+  const provider = getActiveProvider();
+  const apiKey = getActiveApiKey();
+  const formattedText = await formatCopiedText({ text, apiKey, provider });
   console.log('formattedText', formattedText);
   ipcWebContentSend('getRephrasedText', mainWindow.webContents, {
     funny: formattedText.data?.funny ?? '',
