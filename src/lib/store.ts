@@ -2,11 +2,14 @@ import ElectronStore from 'electron-store';
 
 export type LLMProvider = 'groq' | 'openai' | 'anthropic';
 
+export const DEFAULT_HOTKEY = 'CommandOrControl+Shift+C';
+
 interface StoreSchema {
   activeProvider: LLMProvider;
   groqApiKey: string;
   openaiApiKey: string;
   anthropicApiKey: string;
+  hotkey: string;
 }
 
 const Store =
@@ -17,7 +20,8 @@ const store = new Store<StoreSchema>({
     activeProvider: { type: 'string', default: 'groq' },
     groqApiKey: { type: 'string', default: '' },
     openaiApiKey: { type: 'string', default: '' },
-    anthropicApiKey: { type: 'string', default: '' }
+    anthropicApiKey: { type: 'string', default: '' },
+    hotkey: { type: 'string', default: DEFAULT_HOTKEY }
   },
   encryptionKey: 'desktop-ai-encryption-key'
 });
@@ -60,4 +64,16 @@ export function hasApiKeyForProvider(provider: LLMProvider): boolean {
 
 export function hasActiveApiKey(): boolean {
   return getActiveApiKey().length > 0;
+}
+
+export function getHotkey(): string {
+  return store.get('hotkey') || DEFAULT_HOTKEY;
+}
+
+export function setHotkey(accelerator: string): void {
+  store.set('hotkey', accelerator);
+}
+
+export function resetHotkey(): void {
+  store.set('hotkey', DEFAULT_HOTKEY);
 }

@@ -9,12 +9,48 @@ import {
   hasApiKeyForProvider,
   getActiveProvider,
   setActiveProvider,
+  getHotkey,
+  setHotkey as storeSetHotkey,
+  resetHotkey as storeResetHotkey,
+  DEFAULT_HOTKEY,
   type LLMProvider
 } from '../lib/store';
 import dotenv from 'dotenv';
 
 dotenv.config();
 const icon = join(__dirname, '../../resources/icon.png');
+
+let currentAccelerator: string | null = null;
+
+function registerHotkey(accelerator: string): boolean {
+  try {
+    if (currentAccelerator) {
+      globalShortcut.unregister(currentAccelerator);
+    }
+    const success = globalShortcut.register(accelerator, async () => {
+      await createPopupWindow();
+    });
+    if (success) {
+      currentAccelerator = accelerator;
+    } else if (currentAccelerator) {
+      globalShortcut.register(currentAccelerator, async () => {
+        await createPopupWindow();
+      });
+    }
+    return success;
+  } catch {
+    if (currentAccelerator) {
+      try {
+        globalShortcut.register(currentAccelerator, async () => {
+          await createPopupWindow();
+        });
+      } catch {
+        /* best effort restore */
+      }
+    }
+    return false;
+  }
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -163,10 +199,28 @@ ipcMain.handle('set-active-provider', (_event, provider: LLMProvider) => {
   setActiveProvider(provider);
 });
 
+ipcMain.handle('get-hotkey', () => {
+  return getHotkey();
+});
+
+ipcMain.handle('set-hotkey', (_event, accelerator: string) => {
+  const success = registerHotkey(accelerator);
+  if (success) {
+    storeSetHotkey(accelerator);
+  }
+  return success;
+});
+
+ipcMain.handle('reset-hotkey', () => {
+  const success = registerHotkey(DEFAULT_HOTKEY);
+  if (success) {
+    storeResetHotkey();
+  }
+  return success;
+});
+
 app.whenReady().then(() => {
-  globalShortcut.register('CommandOrControl+Shift+C', async () => {
-    await createPopupWindow();
-  });
+  registerHotkey(getHotkey());
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
@@ -190,6 +244,10 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();

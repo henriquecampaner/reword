@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './index.css';
 
 type LLMProvider = 'groq' | 'openai' | 'anthropic';
@@ -235,17 +235,257 @@ function ProviderKeyRow({
   );
 }
 
+const DEFAULT_ACCELERATOR = 'CommandOrControl+Shift+C';
+
+function acceleratorToDisplay(accelerator: string, isMac: boolean): string {
+  return accelerator
+    .replace(/CommandOrControl/g, isMac ? 'Cmd' : 'Ctrl')
+    .replace(/\+/g, ' + ');
+}
+
+function keyEventToAccelerator(e: React.KeyboardEvent): string | null {
+  const modifiers: string[] = [];
+  if (e.ctrlKey || e.metaKey) modifiers.push('CommandOrControl');
+  if (e.shiftKey) modifiers.push('Shift');
+  if (e.altKey) modifiers.push('Alt');
+
+  const IGNORED = new Set([
+    'Control',
+    'Shift',
+    'Alt',
+    'Meta',
+    'CapsLock',
+    'NumLock',
+    'ScrollLock'
+  ]);
+  if (IGNORED.has(e.key)) return null;
+  if (modifiers.length === 0) return null;
+
+  const KEY_MAP: Record<string, string> = {
+    ArrowUp: 'Up',
+    ArrowDown: 'Down',
+    ArrowLeft: 'Left',
+    ArrowRight: 'Right',
+    ' ': 'Space',
+    Escape: 'Escape',
+    Enter: 'Return',
+    Backspace: 'Backspace',
+    Delete: 'Delete',
+    Tab: 'Tab'
+  };
+  const key = KEY_MAP[e.key] ?? e.key.toUpperCase();
+
+  return [...modifiers, key].join('+');
+}
+
+function HotkeyRecorder({
+  currentHotkey,
+  isMac,
+  onHotkeyChanged
+}: {
+  currentHotkey: string;
+  isMac: boolean;
+  onHotkeyChanged: (hotkey: string) => void;
+}) {
+  const [isRecording, setIsRecording] = useState(false);
+  const [pendingAccelerator, setPendingAccelerator] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const inputRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isRecording && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isRecording]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.key === 'Escape') {
+      setIsRecording(false);
+      setPendingAccelerator(null);
+      return;
+    }
+    const accel = keyEventToAccelerator(e);
+    if (accel) {
+      setPendingAccelerator(accel);
+      setIsRecording(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!pendingAccelerator) return;
+    setSaveStatus('saving');
+    try {
+      const success = await window.electron.setHotkey(pendingAccelerator);
+      if (success) {
+        onHotkeyChanged(pendingAccelerator);
+        setPendingAccelerator(null);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      } else {
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      }
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
+
+  const handleReset = async () => {
+    setSaveStatus('saving');
+    try {
+      await window.electron.resetHotkey();
+      onHotkeyChanged(DEFAULT_ACCELERATOR);
+      setPendingAccelerator(null);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
+
+  const displayValue = pendingAccelerator
+    ? acceleratorToDisplay(pendingAccelerator, isMac)
+    : acceleratorToDisplay(currentHotkey, isMac);
+
+  const isDefault = !pendingAccelerator && currentHotkey === DEFAULT_ACCELERATOR;
+
+  return (
+    <div className="bg-gradient-to-r from-blue-500/5 to-indigo-500/5 rounded-xl p-4 border border-blue-400/20">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-white/10 flex items-center justify-center">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            className="text-white/80"
+          >
+            <rect
+              x="2"
+              y="6"
+              width="20"
+              height="12"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path d="M6 10h2m2 0h2m2 0h2m2 0h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M8 14h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div className="text-left flex-1">
+          <h4 className="text-sm font-semibold text-white">Keyboard Shortcut</h4>
+          <p className="text-xs text-white/40">
+            {isDefault ? 'Using default shortcut' : 'Custom shortcut set'}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        {isRecording ? (
+          <div
+            ref={inputRef}
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            onBlur={() => {
+              setIsRecording(false);
+              setPendingAccelerator(null);
+            }}
+            className="flex-1 bg-white/10 border border-blue-400/40 rounded-lg px-3 py-2.5 text-white text-xs font-mono text-center focus:outline-none focus:ring-1 focus:ring-blue-400/40 animate-pulse"
+          >
+            Press your shortcut...
+          </div>
+        ) : (
+          <div className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-center">
+            <kbd className="text-white/80 text-xs font-mono">{displayValue}</kbd>
+            {pendingAccelerator && (
+              <span className="ml-2 text-[10px] text-amber-400/70">unsaved</span>
+            )}
+          </div>
+        )}
+        {!isRecording && !pendingAccelerator && (
+          <button
+            onClick={() => setIsRecording(true)}
+            className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200 text-xs"
+          >
+            Change
+          </button>
+        )}
+        {pendingAccelerator && (
+          <>
+            <button
+              onClick={handleSave}
+              disabled={saveStatus === 'saving'}
+              className="px-4 py-2 rounded-lg bg-white/15 text-white text-xs font-medium hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {saveStatus === 'saving' ? (
+                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                'Save'
+              )}
+            </button>
+            <button
+              onClick={() => setPendingAccelerator(null)}
+              className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200 text-xs"
+            >
+              Cancel
+            </button>
+          </>
+        )}
+        {!isRecording && !pendingAccelerator && !isDefault && (
+          <button
+            onClick={handleReset}
+            disabled={saveStatus === 'saving'}
+            className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200 text-xs"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+
+      {saveStatus === 'saved' && (
+        <div className="mt-2 flex items-center gap-1.5 text-emerald-400 text-xs">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M2 6L5 9L10 3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Shortcut updated
+        </div>
+      )}
+      {saveStatus === 'error' && (
+        <div className="mt-2 text-red-400 text-xs">
+          Failed to register shortcut. It may conflict with another application.
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App(): React.JSX.Element {
   const [isMac, setIsMac] = useState(false);
   const [activeProvider, setActiveProvider] = useState<LLMProvider>('groq');
   const [hasAnyKey, setHasAnyKey] = useState(false);
+  const [currentHotkey, setCurrentHotkey] = useState(DEFAULT_ACCELERATOR);
 
   useEffect(() => {
     setIsMac(navigator.userAgent.includes('Mac'));
 
     const loadSettings = async () => {
-      const provider = await window.electron.getActiveProvider();
+      const [provider, hotkey] = await Promise.all([
+        window.electron.getActiveProvider(),
+        window.electron.getHotkey()
+      ]);
       setActiveProvider(provider);
+      setCurrentHotkey(hotkey);
 
       const checks = await Promise.all(PROVIDERS.map((p) => window.electron.hasApiKey(p.id)));
       setHasAnyKey(checks.some(Boolean));
@@ -334,6 +574,42 @@ function App(): React.JSX.Element {
             </div>
           </div>
 
+          {/* Keyboard Shortcut */}
+          <div className="mb-10">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center gap-2 mb-4">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="text-white/50"
+                >
+                  <rect
+                    x="2"
+                    y="6"
+                    width="20"
+                    height="12"
+                    rx="2"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path d="M6 10h2m2 0h2m2 0h2m2 0h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  <path d="M8 14h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                <h2 className="text-lg font-semibold text-white">Keyboard Shortcut</h2>
+                <span className="text-xs text-white/40">
+                  Customize the global shortcut to trigger the rephraser
+                </span>
+              </div>
+              <HotkeyRecorder
+                currentHotkey={currentHotkey}
+                isMac={isMac}
+                onHotkeyChanged={setCurrentHotkey}
+              />
+            </div>
+          </div>
+
           {/* How to use */}
           <div className="mb-10">
             <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl p-8 border border-purple-400/30 max-w-2xl mx-auto">
@@ -352,7 +628,7 @@ function App(): React.JSX.Element {
                   <p className="text-white/80">
                     Press{' '}
                     <kbd className="bg-white/20 px-3 py-1 rounded-lg text-sm font-mono">
-                      {isMac ? 'Cmd+Shift+C' : 'Ctrl+Shift+C'}
+                      {acceleratorToDisplay(currentHotkey, isMac)}
                     </kbd>
                   </p>
                 </div>

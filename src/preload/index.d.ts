@@ -33,5 +33,8 @@ interface Window {
     hasApiKey: (provider: LLMProvider) => Promise<boolean>;
     getActiveProvider: () => Promise<LLMProvider>;
     setActiveProvider: (provider: LLMProvider) => Promise<void>;
+    getHotkey: () => Promise<string>;
+    setHotkey: (accelerator: string) => Promise<boolean>;
+    resetHotkey: () => Promise<boolean>;
   };
 }

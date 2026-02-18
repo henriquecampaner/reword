@@ -13,7 +13,10 @@ electron.contextBridge.exposeInMainWorld('electron', {
   hasApiKey: (provider: LLMProvider) => electron.ipcRenderer.invoke('has-api-key', provider),
   getActiveProvider: () => electron.ipcRenderer.invoke('get-active-provider'),
   setActiveProvider: (provider: LLMProvider) =>
-    electron.ipcRenderer.invoke('set-active-provider', provider)
+    electron.ipcRenderer.invoke('set-active-provider', provider),
+  getHotkey: () => electron.ipcRenderer.invoke('get-hotkey'),
+  setHotkey: (accelerator: string) => electron.ipcRenderer.invoke('set-hotkey', accelerator),
+  resetHotkey: () => electron.ipcRenderer.invoke('reset-hotkey')
 } satisfies Window['electron']);
 
 function ipcOn<Key extends keyof EventPayloadMapping>(
