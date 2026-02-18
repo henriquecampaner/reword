@@ -1,12 +1,25 @@
 type LLMProvider = 'groq' | 'openai' | 'anthropic';
 
-type EventPayloadMapping = {
-  getRephrasedText: {
+type ToneKey =
+  | 'professional'
+  | 'formal'
+  | 'funny'
+  | 'casual'
+  | 'friendly'
+  | 'persuasive'
+  | 'concise';
+
+type RephraseResponse = {
+  success: boolean;
+  data?: {
     original: string;
-    professional: string;
-    formal: string;
-    funny: string;
+    tone: ToneKey;
+    result: string;
   };
+  error?: string;
+};
+
+type EventPayloadMapping = {
   processingStarted: {
     originalText: string;
   };
@@ -16,17 +29,10 @@ type UnsubscribeFunction = () => void;
 
 interface Window {
   electron: {
-    subscribeToGetRephrasedText: (
-      callback: (data: {
-        original: string;
-        professional: string;
-        formal: string;
-        funny: string;
-      }) => void
-    ) => UnsubscribeFunction;
     subscribeToProcessingStarted: (
       callback: (data: { originalText: string }) => void
     ) => UnsubscribeFunction;
+    rephraseWithTone: (text: string, tone: ToneKey) => Promise<RephraseResponse>;
     closeWindow: () => void;
     getApiKey: (provider: LLMProvider) => Promise<string>;
     setApiKey: (provider: LLMProvider, key: string) => Promise<void>;

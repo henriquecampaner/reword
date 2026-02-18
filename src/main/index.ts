@@ -2,7 +2,8 @@ import { app, shell, BrowserWindow, globalShortcut, clipboard, ipcMain } from 'e
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import { getRephrasedText } from '../lib/getCopyText';
+import { sendSelectedText, rephraseTextWithTone } from '../lib/getCopyText';
+import type { ToneKey } from '../lib/ai-service';
 import {
   getApiKeyForProvider,
   setApiKeyForProvider,
@@ -153,7 +154,7 @@ async function createPopupWindow(): Promise<void> {
     popupWindow.show();
     popupWindow.focus();
 
-    getRephrasedText({ text: selectedText, mainWindow: popupWindow });
+    sendSelectedText({ text: selectedText, mainWindow: popupWindow });
   });
 
   // // Close popup when clicking outside or pressing escape
@@ -217,6 +218,10 @@ ipcMain.handle('reset-hotkey', () => {
     storeResetHotkey();
   }
   return success;
+});
+
+ipcMain.handle('rephrase-with-tone', async (_event, text: string, tone: ToneKey) => {
+  return rephraseTextWithTone(text, tone);
 });
 
 app.whenReady().then(() => {

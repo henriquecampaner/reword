@@ -1,26 +1,24 @@
 import { BrowserWindow } from 'electron';
 import { ipcWebContentSend } from './adapters';
-import { formatCopiedText } from './ai-service';
+import { rephraseWithTone, type ToneKey, type RephraseResponse } from './ai-service';
 import { getActiveApiKey, getActiveProvider } from './store';
 
-type GetRephrasedText = {
+type SendSelectedTextParams = {
   text: string;
   mainWindow: BrowserWindow;
 };
 
-export async function getRephrasedText({ text, mainWindow }: GetRephrasedText) {
+export function sendSelectedText({ text, mainWindow }: SendSelectedTextParams): void {
   ipcWebContentSend('processingStarted', mainWindow.webContents, {
     originalText: text
   });
+}
 
+export async function rephraseTextWithTone(
+  text: string,
+  tone: ToneKey
+): Promise<RephraseResponse> {
   const provider = getActiveProvider();
   const apiKey = getActiveApiKey();
-  const formattedText = await formatCopiedText({ text, apiKey, provider });
-  console.log('formattedText', formattedText);
-  ipcWebContentSend('getRephrasedText', mainWindow.webContents, {
-    funny: formattedText.data?.funny ?? '',
-    professional: formattedText.data?.professional ?? '',
-    formal: formattedText.data?.formal ?? '',
-    original: formattedText.data?.original ?? ''
-  });
+  return rephraseWithTone({ text, tone, apiKey, provider });
 }

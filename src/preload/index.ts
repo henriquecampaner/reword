@@ -2,8 +2,9 @@
 import electron from 'electron';
 
 electron.contextBridge.exposeInMainWorld('electron', {
-  subscribeToGetRephrasedText: (callback) => ipcOn('getRephrasedText', callback),
   subscribeToProcessingStarted: (callback) => ipcOn('processingStarted', callback),
+  rephraseWithTone: (text: string, tone: ToneKey) =>
+    electron.ipcRenderer.invoke('rephrase-with-tone', text, tone),
   closeWindow: () => {
     electron.ipcRenderer.send('close-window');
   },
