@@ -1,4 +1,13 @@
-import { app, shell, BrowserWindow, globalShortcut, clipboard, ipcMain } from 'electron';
+import {
+  app,
+  shell,
+  BrowserWindow,
+  globalShortcut,
+  clipboard,
+  ipcMain,
+  systemPreferences,
+  dialog
+} from 'electron';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
@@ -23,7 +32,32 @@ const icon = join(__dirname, '../../resources/icon.png');
 
 let currentAccelerator: string | null = null;
 
+function ensureAccessibility(): boolean {
+  if (process.platform !== 'darwin') return true;
+  const trusted = systemPreferences.isTrustedAccessibilityClient(false);
+  if (!trusted) {
+    systemPreferences.isTrustedAccessibilityClient(true);
+    dialog.showMessageBoxSync({
+      type: 'info',
+      title: 'Accessibility Permission Required',
+      message:
+        'Reword needs Accessibility access to register global hotkeys and capture selected text.\n\n' +
+        'A system prompt should appear. Grant access to Reword in:\n' +
+        'System Settings → Privacy & Security → Accessibility\n\n' +
+        'After granting access, restart the app.',
+      buttons: ['OK']
+    });
+    return false;
+  }
+  return true;
+}
+
 function registerHotkey(accelerator: string): boolean {
+  if (!ensureAccessibility()) {
+    console.warn('Accessibility permission not granted — hotkey registration skipped.');
+    return false;
+  }
+
   try {
     if (currentAccelerator) {
       globalShortcut.unregister(currentAccelerator);
@@ -86,14 +120,14 @@ function createWindow(): void {
 }
 
 async function getSelectedText(): Promise<string> {
-  // Store current clipboard content
   const originalClipboard = clipboard.readText();
 
-  // Simulate Ctrl+C (Cmd+C on Mac) to copy selected text
+  if (process.platform === 'darwin' && !ensureAccessibility()) {
+    return 'Accessibility permission required to capture selected text.';
+  }
 
   try {
     if (process.platform === 'darwin') {
-      // macOS
       execSync(
         'osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"'
       );
