@@ -520,10 +520,15 @@ function App(): React.JSX.Element {
         <div className="bg-white/[0.06] backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-white/[0.1] text-center">
           {/* Header */}
           <div className="mb-10">
-            <div className="text-7xl mb-6 animate-bounce">✨</div>
-            <h1 className="text-5xl font-bold text-white mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              AI Text Rephraser
-            </h1>
+            <div className="flex justify-center mb-6">
+              <div className="rounded-2xl bg-white/10 px-6 py-3 inline-flex items-center justify-center">
+                <img
+                  src="/logo.svg"
+                  alt="Reword"
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
+            </div>
             <p className="text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
               Transform your text into professional, formal, or funny variations with the power of
               AI

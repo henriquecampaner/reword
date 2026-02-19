@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
+import { RewordLogo } from './components/RewordLogo';
+
 type ToneKey =
   | 'professional'
   | 'formal'
@@ -183,13 +185,15 @@ export function PopApp(): React.JSX.Element {
             <div className="px-6 pt-6 pb-4">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center">
-                    <span className="text-lg">{state === 'loading' ? '⚡' : '✨'}</span>
+                  <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center bg-white/[0.06] border border-white/10">
+                    {state === 'loading' ? (
+                      <span className="text-lg">⚡</span>
+                    ) : (
+                      <RewordLogo iconOnly width={36} height={36} className="flex-shrink-0" />
+                    )}
                   </div>
                   <div>
-                    <h1 className="text-lg font-semibold text-white/95 tracking-tight">
-                      Text Rephraser
-                    </h1>
+                    <h1 className="text-lg font-semibold text-white/95 tracking-tight">Reword</h1>
                   </div>
                 </div>
                 <button
