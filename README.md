@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="resources/logo.svg" alt="Reword Logo" width="200"/>
+</div>
+
 # Reword
 
 A desktop app that rephrases selected text in different tones using AI. Select text anywhere, trigger a global hotkey, choose a tone (e.g. professional, casual, funny), and get an AI-rewritten version to copy.
@@ -9,6 +13,14 @@ A desktop app that rephrases selected text in different tones using AI. Select t
 - **Tone rephrasing**: Pick a tone (Professional, Formal, Casual, Friendly, Funny, Persuasive, Concise) and send the text to an LLM to get a rephrased version.
 - **Multiple AI providers**: Supports **Groq** (Llama), **OpenAI** (GPT-4o-mini), and **Anthropic** (Claude). API keys and the active provider are configurable in the app and stored locally (electron-store).
 - **Popup UI**: A small, always-on-top window shows the original text, lets you pick a tone, shows the result, and lets you copy it.
+
+## Screenshots
+
+### Main Window
+![Main Window](resources/main.png)
+
+### Result View
+![Result View](resources/result.png)
 
 ## Technologies
 
