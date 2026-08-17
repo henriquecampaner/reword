@@ -13,6 +13,7 @@ import { execSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { sendSelectedText, rephraseTextWithTone } from '../lib/getCopyText';
 import type { ToneKey } from '../lib/ai-service';
+import { fetchGroqModels, pickGroqModelId, type GroqModel } from '../lib/groq-models';
 import {
   getApiKeyForProvider,
   setApiKeyForProvider,
@@ -22,6 +23,8 @@ import {
   getHotkey,
   setHotkey as storeSetHotkey,
   resetHotkey as storeResetHotkey,
+  getGroqModelId,
+  setGroqModelId,
   DEFAULT_HOTKEY,
   type LLMProvider
 } from '../lib/store';
@@ -212,6 +215,36 @@ ipcMain.on('close-window', (event) => {
   }
 });
 
+async function resolveGroqModels(): Promise<{
+  models: GroqModel[];
+  selectedId: string;
+  error?: string;
+}> {
+  const apiKey = getApiKeyForProvider('groq');
+  const savedId = getGroqModelId();
+  if (!apiKey) {
+    return { models: [], selectedId: savedId, error: 'No Groq API key' };
+  }
+
+  try {
+    const models = await fetchGroqModels(apiKey);
+    const selectedId = pickGroqModelId(
+      models.map((model) => model.id),
+      savedId
+    );
+    if (selectedId && selectedId !== savedId) {
+      setGroqModelId(selectedId);
+    }
+    return { models, selectedId: selectedId ?? savedId };
+  } catch (error) {
+    return {
+      models: [],
+      selectedId: savedId,
+      error: error instanceof Error ? error.message : 'Failed to list Groq models'
+    };
+  }
+}
+
 ipcMain.handle('get-api-key', (_event, provider: LLMProvider) => {
   const key = getApiKeyForProvider(provider);
   if (!key) return '';
@@ -254,12 +287,25 @@ ipcMain.handle('reset-hotkey', () => {
   return success;
 });
 
+ipcMain.handle('list-groq-models', async () => {
+  return resolveGroqModels();
+});
+
+ipcMain.handle('get-groq-model', () => {
+  return getGroqModelId();
+});
+
+ipcMain.handle('set-groq-model', (_event, id: string) => {
+  setGroqModelId(id);
+});
+
 ipcMain.handle('rephrase-with-tone', async (_event, text: string, tone: ToneKey) => {
   return rephraseTextWithTone(text, tone);
 });
 
 app.whenReady().then(() => {
   registerHotkey(getHotkey());
+  void resolveGroqModels();
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');

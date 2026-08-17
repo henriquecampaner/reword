@@ -7,6 +7,7 @@ export const DEFAULT_HOTKEY = 'CommandOrControl+Shift+C';
 interface StoreSchema {
   activeProvider: LLMProvider;
   groqApiKey: string;
+  groqModelId: string;
   openaiApiKey: string;
   anthropicApiKey: string;
   hotkey: string;
@@ -19,6 +20,7 @@ const store = new Store<StoreSchema>({
   schema: {
     activeProvider: { type: 'string', default: 'groq' },
     groqApiKey: { type: 'string', default: '' },
+    groqModelId: { type: 'string', default: '' },
     openaiApiKey: { type: 'string', default: '' },
     anthropicApiKey: { type: 'string', default: '' },
     hotkey: { type: 'string', default: DEFAULT_HOTKEY }
@@ -76,4 +78,12 @@ export function setHotkey(accelerator: string): void {
 
 export function resetHotkey(): void {
   store.set('hotkey', DEFAULT_HOTKEY);
+}
+
+export function getGroqModelId(): string {
+  return store.get('groqModelId') || '';
+}
+
+export function setGroqModelId(id: string): void {
+  store.set('groqModelId', id);
 }

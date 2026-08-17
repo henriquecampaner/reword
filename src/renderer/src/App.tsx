@@ -20,7 +20,7 @@ const PROVIDERS: ProviderConfig[] = [
     id: 'groq',
     name: 'Groq',
     description: 'Ultra-fast inference',
-    model: 'Llama 3.3 70B',
+    model: 'GPT OSS 120B',
     placeholder: 'gsk_...',
     docsUrl: 'console.groq.com',
     gradient: 'from-orange-500/5 to-amber-500/5',
@@ -66,6 +66,10 @@ function ProviderKeyRow({
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+  const [groqModels, setGroqModels] = useState<GroqModelOption[]>([]);
+  const [groqModelId, setGroqModelId] = useState('');
+  const [groqModelsError, setGroqModelsError] = useState('');
+  const [groqModelsLoading, setGroqModelsLoading] = useState(false);
 
   const loadKey = useCallback(async () => {
     const exists = await window.electron.hasApiKey(provider.id);
@@ -80,6 +84,28 @@ function ProviderKeyRow({
     loadKey();
   }, [loadKey]);
 
+  const loadGroqModels = useCallback(async () => {
+    if (provider.id !== 'groq') return;
+    setGroqModelsLoading(true);
+    setGroqModelsError('');
+    try {
+      const result = await window.electron.listGroqModels();
+      setGroqModels(result.models);
+      setGroqModelId(result.selectedId);
+      if (result.error) setGroqModelsError(result.error);
+    } catch {
+      setGroqModelsError('Failed to load Groq models');
+    } finally {
+      setGroqModelsLoading(false);
+    }
+  }, [provider.id]);
+
+  useEffect(() => {
+    if (hasKey && provider.id === 'groq') {
+      void loadGroqModels();
+    }
+  }, [hasKey, loadGroqModels, provider.id]);
+
   const handleSave = async () => {
     if (!inputValue.trim()) return;
     setIsSaving(true);
@@ -92,6 +118,9 @@ function ProviderKeyRow({
       setIsEditing(false);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 3000);
+      if (provider.id === 'groq') {
+        void loadGroqModels();
+      }
     } catch {
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
@@ -137,9 +166,11 @@ function ProviderKeyRow({
         <div className="text-left flex-1">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold text-white">{provider.name}</h4>
-            <span className="text-[10px] text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
-              {provider.model}
-            </span>
+            {provider.id !== 'groq' && (
+              <span className="text-[10px] text-white/40 bg-white/5 px-1.5 py-0.5 rounded">
+                {provider.model}
+              </span>
+            )}
           </div>
           <p className="text-xs text-white/40">{provider.docsUrl}</p>
         </div>
@@ -230,6 +261,39 @@ function ProviderKeyRow({
       )}
       {saveStatus === 'error' && (
         <div className="mt-2 text-red-400 text-xs">Failed to save. Please try again.</div>
+      )}
+
+      {provider.id === 'groq' && hasKey && (
+        <div className="mt-3">
+          <label className="block text-[10px] uppercase tracking-wide text-white/35 mb-1.5">
+            Model
+          </label>
+          <select
+            value={groqModels.some((model) => model.id === groqModelId) ? groqModelId : ''}
+            disabled={groqModelsLoading || groqModels.length === 0}
+            onChange={async (e) => {
+              const id = e.target.value;
+              setGroqModelId(id);
+              await window.electron.setGroqModel(id);
+            }}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-white/25 focus:ring-1 focus:ring-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {groqModelsLoading && groqModels.length === 0 ? (
+              <option value="">Loading models…</option>
+            ) : groqModels.length === 0 ? (
+              <option value="">No chat models available</option>
+            ) : (
+              groqModels.map((model) => (
+                <option key={model.id} value={model.id} className="bg-zinc-900">
+                  {model.id}
+                </option>
+              ))
+            )}
+          </select>
+          {groqModelsError && (
+            <p className="mt-1.5 text-[11px] text-red-400/80">{groqModelsError}</p>
+          )}
+        </div>
       )}
     </div>
   );

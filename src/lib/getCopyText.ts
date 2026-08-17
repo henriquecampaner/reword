@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { ipcWebContentSend } from './adapters';
 import { rephraseWithTone, type ToneKey, type RephraseResponse } from './ai-service';
-import { getActiveApiKey, getActiveProvider } from './store';
+import { getActiveApiKey, getActiveProvider, getGroqModelId } from './store';
 
 type SendSelectedTextParams = {
   text: string;
@@ -14,11 +14,14 @@ export function sendSelectedText({ text, mainWindow }: SendSelectedTextParams): 
   });
 }
 
-export async function rephraseTextWithTone(
-  text: string,
-  tone: ToneKey
-): Promise<RephraseResponse> {
+export async function rephraseTextWithTone(text: string, tone: ToneKey): Promise<RephraseResponse> {
   const provider = getActiveProvider();
   const apiKey = getActiveApiKey();
-  return rephraseWithTone({ text, tone, apiKey, provider });
+  return rephraseWithTone({
+    text,
+    tone,
+    apiKey,
+    provider,
+    groqModelId: provider === 'groq' ? getGroqModelId() : undefined
+  });
 }

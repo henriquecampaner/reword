@@ -19,6 +19,16 @@ type RephraseResponse = {
   error?: string;
 };
 
+type GroqModelOption = {
+  id: string;
+};
+
+type GroqModelsResult = {
+  models: GroqModelOption[];
+  selectedId: string;
+  error?: string;
+};
+
 type EventPayloadMapping = {
   processingStarted: {
     originalText: string;
@@ -42,5 +52,8 @@ interface Window {
     getHotkey: () => Promise<string>;
     setHotkey: (accelerator: string) => Promise<boolean>;
     resetHotkey: () => Promise<boolean>;
+    listGroqModels: () => Promise<GroqModelsResult>;
+    getGroqModel: () => Promise<string>;
+    setGroqModel: (id: string) => Promise<void>;
   };
 }

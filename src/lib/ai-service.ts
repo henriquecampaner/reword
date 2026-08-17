@@ -3,6 +3,7 @@ import { createGroq } from '@ai-sdk/groq';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import type { LLMProvider } from './store';
+import { PREFERRED_GROQ_MODEL_ID } from './groq-models';
 
 export type ToneKey =
   | 'professional'
@@ -35,6 +36,7 @@ export interface RephraseRequest {
   tone: ToneKey;
   apiKey?: string;
   provider?: LLMProvider;
+  groqModelId?: string;
 }
 
 export interface RephraseResponse {
@@ -47,11 +49,11 @@ export interface RephraseResponse {
   error?: string;
 }
 
-function createModel(provider: LLMProvider, apiKey: string): LanguageModel {
+function createModel(provider: LLMProvider, apiKey: string, groqModelId?: string): LanguageModel {
   switch (provider) {
     case 'groq': {
       const groq = createGroq({ apiKey });
-      return groq('llama-3.3-70b-versatile');
+      return groq(groqModelId || PREFERRED_GROQ_MODEL_ID);
     }
     case 'openai': {
       const openai = createOpenAI({ apiKey });
@@ -84,13 +86,16 @@ export async function rephraseWithTone(request: RephraseRequest): Promise<Rephra
       };
     }
 
-    const model = createModel(provider, apiKey);
+    const groqModelId = request.groqModelId || PREFERRED_GROQ_MODEL_ID;
+    const model = createModel(provider, apiKey, groqModelId);
     const tonePrompt = TONE_PROMPTS[request.tone];
+    const usesGroqReasoning = provider === 'groq' && groqModelId.includes('gpt-oss');
 
     const result = await generateText({
       model,
-      maxOutputTokens: 200,
+      maxOutputTokens: provider === 'groq' ? 1024 : 200,
       temperature: 0.3,
+      providerOptions: usesGroqReasoning ? { groq: { reasoningEffort: 'low' } } : undefined,
       system: `You rewrite text in different tones. Fix any grammar errors using British English spelling and grammar. ${tonePrompt} Do not add new information or expand unnecessarily. Output ONLY the rewritten text.`,
       prompt: `Text to rewrite: "${request.text}"`
     });

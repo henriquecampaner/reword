@@ -17,7 +17,10 @@ electron.contextBridge.exposeInMainWorld('electron', {
     electron.ipcRenderer.invoke('set-active-provider', provider),
   getHotkey: () => electron.ipcRenderer.invoke('get-hotkey'),
   setHotkey: (accelerator: string) => electron.ipcRenderer.invoke('set-hotkey', accelerator),
-  resetHotkey: () => electron.ipcRenderer.invoke('reset-hotkey')
+  resetHotkey: () => electron.ipcRenderer.invoke('reset-hotkey'),
+  listGroqModels: () => electron.ipcRenderer.invoke('list-groq-models'),
+  getGroqModel: () => electron.ipcRenderer.invoke('get-groq-model'),
+  setGroqModel: (id: string) => electron.ipcRenderer.invoke('set-groq-model', id)
 } satisfies Window['electron']);
 
 function ipcOn<Key extends keyof EventPayloadMapping>(
