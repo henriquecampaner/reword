@@ -9,10 +9,11 @@ import {
   dialog
 } from 'electron';
 import { join } from 'path';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import { sendSelectedText, rephraseTextWithTone } from '../lib/getCopyText';
 import type { ToneKey } from '../lib/ai-service';
+import { copyMacSelection, formatSelectionError } from '../lib/mac-selection';
 import { fetchGroqModels, pickGroqModelId, type GroqModel } from '../lib/groq-models';
 import {
   getApiKeyForProvider,
@@ -44,10 +45,10 @@ function ensureAccessibility(): boolean {
       type: 'info',
       title: 'Accessibility Permission Required',
       message:
-        'Reword needs Accessibility access to register global hotkeys and capture selected text.\n\n' +
+        'Reword needs Accessibility access to capture selected text.\n\n' +
         'A system prompt should appear. Grant access to Reword in:\n' +
         'System Settings → Privacy & Security → Accessibility\n\n' +
-        'After granting access, restart the app.',
+        'After granting access, quit Reword completely and open it again.',
       buttons: ['OK']
     });
     return false;
@@ -56,11 +57,6 @@ function ensureAccessibility(): boolean {
 }
 
 function registerHotkey(accelerator: string): boolean {
-  if (!ensureAccessibility()) {
-    console.warn('Accessibility permission not granted — hotkey registration skipped.');
-    return false;
-  }
-
   try {
     if (currentAccelerator) {
       globalShortcut.unregister(currentAccelerator);
@@ -131,26 +127,24 @@ async function getSelectedText(): Promise<string> {
 
   try {
     if (process.platform === 'darwin') {
-      execSync(
-        'osascript -e "tell application \\"System Events\\" to keystroke \\"c\\" using command down"'
-      );
+      await copyMacSelection();
     } else if (process.platform === 'win32') {
-      // Windows
-      execSync(
-        'powershell -command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait(\'^c\')"'
+      execFileSync(
+        'powershell',
+        [
+          '-command',
+          "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^c')"
+        ],
+        { timeout: 4000 }
       );
     } else {
-      // Linux
-      execSync('xdotool key ctrl+c');
+      execFileSync('xdotool', ['key', 'ctrl+c'], { timeout: 4000 });
     }
 
-    // Wait a moment for clipboard to update
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 80));
 
-    // Get the selected text from clipboard
     const selectedText = clipboard.readText();
 
-    // Restore original clipboard content after a short delay
     setTimeout(() => {
       clipboard.writeText(originalClipboard);
     }, 1000);
@@ -158,13 +152,11 @@ async function getSelectedText(): Promise<string> {
     return selectedText || 'No text selected';
   } catch (error) {
     console.error('Error getting selected text:', error);
-    return 'Error getting selected text';
+    return formatSelectionError(error);
   }
 }
 
 async function createPopupWindow(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 200));
-  // Get selected text first
   const selectedText = await getSelectedText();
 
   // Create a small popup window

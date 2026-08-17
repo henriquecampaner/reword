@@ -2,7 +2,8 @@ import ElectronStore from 'electron-store';
 
 export type LLMProvider = 'groq' | 'openai' | 'anthropic';
 
-export const DEFAULT_HOTKEY = 'CommandOrControl+Shift+C';
+export const DEFAULT_HOTKEY = 'CommandOrControl+Shift+R';
+const LEGACY_DEFAULT_HOTKEY = 'CommandOrControl+Shift+C';
 
 interface StoreSchema {
   activeProvider: LLMProvider;
@@ -11,6 +12,7 @@ interface StoreSchema {
   openaiApiKey: string;
   anthropicApiKey: string;
   hotkey: string;
+  hotkeyMigratedFromShiftC: boolean;
 }
 
 const Store =
@@ -23,7 +25,8 @@ const store = new Store<StoreSchema>({
     groqModelId: { type: 'string', default: '' },
     openaiApiKey: { type: 'string', default: '' },
     anthropicApiKey: { type: 'string', default: '' },
-    hotkey: { type: 'string', default: DEFAULT_HOTKEY }
+    hotkey: { type: 'string', default: DEFAULT_HOTKEY },
+    hotkeyMigratedFromShiftC: { type: 'boolean', default: false }
   },
   encryptionKey: 'desktop-ai-encryption-key'
 });
@@ -34,7 +37,7 @@ const ENV_KEYS: Record<LLMProvider, string> = {
   anthropic: 'ANTHROPIC_API_KEY'
 };
 
-const STORE_KEYS: Record<LLMProvider, keyof StoreSchema> = {
+const STORE_KEYS: Record<LLMProvider, 'groqApiKey' | 'openaiApiKey' | 'anthropicApiKey'> = {
   groq: 'groqApiKey',
   openai: 'openaiApiKey',
   anthropic: 'anthropicApiKey'
@@ -69,6 +72,10 @@ export function hasActiveApiKey(): boolean {
 }
 
 export function getHotkey(): string {
+  if (!store.get('hotkeyMigratedFromShiftC') && store.get('hotkey') === LEGACY_DEFAULT_HOTKEY) {
+    store.set('hotkey', DEFAULT_HOTKEY);
+    store.set('hotkeyMigratedFromShiftC', true);
+  }
   return store.get('hotkey') || DEFAULT_HOTKEY;
 }
 

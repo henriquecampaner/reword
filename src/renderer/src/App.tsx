@@ -299,7 +299,7 @@ function ProviderKeyRow({
   );
 }
 
-const DEFAULT_ACCELERATOR = 'CommandOrControl+Shift+C';
+const DEFAULT_ACCELERATOR = 'CommandOrControl+Shift+R';
 
 function acceleratorToDisplay(accelerator: string, isMac: boolean): string {
   return accelerator
@@ -527,7 +527,8 @@ function HotkeyRecorder({
       )}
       {saveStatus === 'error' && (
         <div className="mt-2 text-red-400 text-xs">
-          Failed to register shortcut. It may conflict with another application.
+          Could not register that shortcut. It may already be used by macOS or
+          another app. Try Cmd+Shift+R, or another unused combination.
         </div>
       )}
     </div>
